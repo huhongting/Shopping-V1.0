@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app version="3.0" xmlns="http://java.sun.com/xml/ns/javaee"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee 
+	http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
+	<display-name></display-name>
+
+	<servlet>
+		<servlet-name>dispatcherServlet</servlet-name>
+		<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+		<init-param>
+			<param-name>contextConfigLocation</param-name>
+			<param-value>/WEB-INF/hib-config.xml,/WEB-INF/springmvc-servlet.xml</param-value>
+		</init-param>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>dispatcherServlet</servlet-name>
+		<url-pattern>/</url-pattern>
+	</servlet-mapping>
+	
+	<!-- <context-param>  
+       <param-name>log4jConfigLocation</param-name>  
+       <param-value>/WEB-INF/log4j.properties</param-value>  
+	</context-param>
+	<listener>
+		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+	</listener>  --> 
+	
+	<listener>
+		<listener-class>cn.edu.jnu.web.listener.SiteSessionListener</listener-class>
+	</listener>
+	
+	<session-config>
+		<session-timeout>30</session-timeout><!-- 30分钟不操作，则session超时 -->
+	</session-config>
+	
+	<error-page>
+		<error-code>404</error-code>
+		<location>/WEB-INF/view/404.jsp</location>
+	</error-page>
+	<error-page>
+		<error-code>500</error-code>
+		<location>/WEB-INF/view/500.jsp</location>
+	</error-page>
+	<!-- <error-page>
+		<exception-type>java.lang.Exception</exception-type>
+		<exception-type>java.sql.SQLException</exception-type>
+		<exception-type>java.io.IOException</exception-type>
+		<location>/WEB-INF/view/exception.jsp</location>
+	</error-page> -->
+	
+</web-app>

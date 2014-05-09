@@ -1,0 +1,210 @@
+package cn.edu.jnu.web.init;
+
+import java.security.NoSuchAlgorithmException;
+
+import javax.annotation.Resource;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import cn.edu.jnu.web.entity.emp.Notification;
+import cn.edu.jnu.web.entity.menu.Node;
+import cn.edu.jnu.web.entity.permission.Group;
+import cn.edu.jnu.web.entity.user.Account;
+import cn.edu.jnu.web.entity.user.User;
+import cn.edu.jnu.web.service.NodeService;
+import cn.edu.jnu.web.service.NotificationService;
+import cn.edu.jnu.web.service.OrderService;
+import cn.edu.jnu.web.service.UserService;
+import cn.edu.jnu.web.service.permission.GroupService;
+import cn.edu.jnu.web.util.PasswordUtil;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
+/**
+ * 初始化系统
+ * @author HHT
+ *
+ */
+@Controller
+public class SystemInitController {
+	
+	private UserService userService;
+	private GroupService groupService;
+	private NodeService nodeService;
+	private NotificationService notificationService;
+	private OrderService orderService;
+	
+	@RequestMapping(value="/system/init")
+	public String showInitView() {
+		return "/pages/init/init";
+	}
+	
+	@RequestMapping(value="/control/system/init.do")
+	public @ResponseBody ObjectNode executeInit() {
+		
+		ObjectMapper mapper = new ObjectMapper();
+
+		try {
+			// 初始化系统账户&权限组
+			initEmployeeAndGroup();
+			
+			// 初始化后台菜单
+			initMenu();
+
+			// 初始化系统通知
+			initNotes();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return mapper.createObjectNode().put("success", false);
+		}
+		
+		return mapper.createObjectNode().put("success", true);
+	}
+	
+	private void initNotes() throws Exception {
+		Notification note = new Notification();
+		note.setContent("欢迎加入IShare.com<br>祝大家工作愉快！");
+		note.setTitle("欢迎加入IShare.com");
+		note.setStatus(Notification.NOTIFICATIONTYPE_IMPORTANT);
+		note.setCreater(userService.findByName("admin.ishare.com"));
+		notificationService.AddNotification(note);
+	}
+
+	private void initEmployeeAndGroup() throws NoSuchAlgorithmException {
+		Group group = new Group();
+		group.setAuthority("111111111111111111111111");
+		group.setCreater(null);
+		group.setName("超级管理员");
+		group.setRemark("系统超级管理员，拥有系统所有操作权限");
+		groupService.saveGroup(group);
+		
+		User admin = new User();
+		admin.setAccount(new Account());
+		admin.setEmail("sh.huht@gmail.com");
+		admin.setName("admin.ishare.com");
+		admin.setNote("默认系统管理员");
+		admin.setPassword(PasswordUtil.getEncodeString("ishare.com.admin"));
+		admin.setUserType(User.ADMINISTRATOR);
+		admin.setGroup(group);
+		userService.saveUser(admin);
+		
+		User test = new User();
+		test.setAccount(new Account());
+		test.setEmail("2318231678@qq.com");
+		test.setName("test");
+		test.setNote("默认体验帐号");
+		test.setPassword(PasswordUtil.getEncodeString("test"));
+		test.setUserType(User.EMPLOYEE);
+		test.setGroup(null);
+		userService.saveUser(test);
+		
+		group.setCreater(admin);
+		groupService.updateGroup(group);
+	}
+
+	private void initMenu() throws Exception {
+		Node node = new Node("订单管理", false, null, null);
+		nodeService.saveNode(node);
+		Node cnode = new Node("订单查询", true, node, null);
+		nodeService.saveNode(cnode);
+		cnode = new Node("等待审核订单", true, node, null);
+		nodeService.saveNode(cnode);
+		cnode = new Node("等待付款订单", true, node, null);
+		nodeService.saveNode(cnode);
+		cnode = new Node("等待配货订单", true, node, null);
+		nodeService.saveNode(cnode);
+		cnode = new Node("等待发货订单", true, node, null);
+		nodeService.saveNode(cnode);
+		cnode = new Node("已发货订单", true, node, null);
+		nodeService.saveNode(cnode);
+		cnode = new Node("已收货订单", true, node, null);
+		nodeService.saveNode(cnode);
+		cnode = new Node("已取消订单", true, node, null);
+		nodeService.saveNode(cnode);
+		
+		node = new Node("书籍管理", false, null, null);
+		nodeService.saveNode(node);
+		cnode = new Node("书籍管理", true, node, null);
+		nodeService.saveNode(cnode);
+		cnode = new Node("书籍类别管理", true, node, null);
+		nodeService.saveNode(cnode);
+		cnode = new Node("菜单排序", true, node, null);
+		nodeService.saveNode(cnode);
+		cnode = new Node("出版社管理", true, node, null);
+		nodeService.saveNode(cnode);
+		cnode = new Node("已删除书籍管理", true, node, null);
+		nodeService.saveNode(cnode);
+		
+		node = new Node("前台管理", false, null, null);
+		nodeService.saveNode(node);
+		cnode = new Node("广告管理", true, node, null);
+		nodeService.saveNode(cnode);
+		
+		node = new Node("用户管理", false, null, null);
+		nodeService.saveNode(node);
+		cnode = new Node("用户管理", true, node, null);
+		nodeService.saveNode(cnode);
+		cnode = new Node("已禁用用户管理", true, node, null);
+		nodeService.saveNode(cnode);
+		cnode = new Node("评论管理", true, node, null);
+		nodeService.saveNode(cnode);
+		
+		node = new Node("员工管理", false, null, null);
+		nodeService.saveNode(node);
+		cnode = new Node("员工查询", true, node, null);
+		nodeService.saveNode(cnode);
+		cnode = new Node("在职员工管理", true, node, null);
+		nodeService.saveNode(cnode);
+		cnode = new Node("离职员工管理", true, node, null);
+		nodeService.saveNode(cnode);
+		
+		node = new Node("权限管理", false, null, null);
+		nodeService.saveNode(node);
+		cnode = new Node("权限组管理", true, node, null);
+		nodeService.saveNode(cnode);
+	}
+
+	public UserService getUserService() {
+		return userService;
+	}
+	@Resource(name="userServiceImpl")
+	public void setUserService(UserService userService) {
+		this.userService = userService;
+	}
+
+	public GroupService getGroupService() {
+		return groupService;
+	}
+	@Resource(name="groupServiceImpl")
+	public void setGroupService(GroupService groupService) {
+		this.groupService = groupService;
+	}
+
+	public NodeService getNodeService() {
+		return nodeService;
+	}
+	@Resource(name="nodeServiceImpl")
+	public void setNodeService(NodeService nodeService) {
+		this.nodeService = nodeService;
+	}
+
+	public NotificationService getNotificationService() {
+		return notificationService;
+	}
+	@Resource(name="notificationServiceImpl")
+	public void setNotificationService(NotificationService notificationService) {
+		this.notificationService = notificationService;
+	}
+
+	public OrderService getOrderService() {
+		return orderService;
+	}
+	@Resource(name="orderServiceImpl")
+	public void setOrderService(OrderService orderService) {
+		this.orderService = orderService;
+	}
+	
+}
